@@ -25,7 +25,6 @@ F = ????
 
 /*
 TODO LIST:
-- treat tabs in the title as spaces when writing to database. (this will fuck us up if we dont)
 - undo and redo
 - stats
 */
@@ -211,6 +210,9 @@ void help(){
     cout << "Help Menu" << endl;
     cout << "quit: saves and quits" << endl;
     cout << "search [SPECIFIERS] [TERM]: searches for songs with a given term " << endl;
+    cout << "\t Specifiers: Filter form stars or level. Allowed comparison operators are >,<,==,<=,>=,!" << endl;
+    cout << "\t Example usage: search stars>4 level<=E rose" << endl;
+    cout << "\t Example usage with escape character: search \\stars!!" << endl;
     cout << "save: saves the current database" << endl;
     cout << "backup: backs up the current database (including unsaved changes)" << endl;
 }
