@@ -62,7 +62,7 @@ void clean_up_whitespace(string &message){
     message.erase(0, message.find_first_not_of(' '));
 
     bool charged = false;
-    for (int i=0; i<message.size(); i++){
+    for (unsigned int i=0; i<message.size(); i++){
         if(message[i] == ' '){
             if (!charged){
                 charged = true;

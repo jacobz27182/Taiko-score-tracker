@@ -3,8 +3,6 @@
 
 /*
 TODO:
-- ADD SAFETY VALIATORS IN THE CLASS METHODS
-- NOTE IF I WRITE MY IO CODE CORRECTLY THESE SAFETIES SHOULD NEVER BE TRIGGERED
 - ADD A REPLACE FUNCTION
 */
 
@@ -127,7 +125,7 @@ vector<string> TaikoDatabase::search(stringstream& term){
             string star_op;
             string star_num;
             SearchState state = SearchState::Operator;
-            int i=5;
+            unsigned int i=5;
             while (i<specifier.size()){ 
                 if (state==SearchState::Operator){ //Read until we hit a digit
                     char op_char = specifier[i];
@@ -176,8 +174,7 @@ vector<string> TaikoDatabase::search(stringstream& term){
             bool valid = true;
             string level_op;
             char level_num = '_';
-            SearchState state = SearchState::Operator;
-            int i=5;
+            unsigned int i=5;
             while (i<specifier.size()){ 
                 //Read until we hit a level
                 char op_char = toupper(specifier[i]);
@@ -293,12 +290,12 @@ string TaikoDatabase::backup(){
 	return backup_filename;
 }
 
-void TaikoDatabase::add_new_song(Song song){
+void TaikoDatabase::add_new_song(const Song& song){
     if (does_it_exist(song.title)){
         cout << "WHAT THE FUCK, WHY DOES THIS SONG ALREADY EXIST" << endl;
         return;
     }
-    if ((song.level <= min_allowed_level) || (song.level >= max_allowed_level)){
+    if ((song.level < min_allowed_level) || (song.level > max_allowed_level)){
         cout << "WHAT THE FUCK, WHY DOES THIS SONG HAVE AN INVALID LEVEL" << endl;
         return;
     }
@@ -312,8 +309,8 @@ void TaikoDatabase::add_new_song(Song song){
     tally[song.stars-1][song.level-'A']++;
 }
 
-//TODO: DEBUG
-void TaikoDatabase::delete_song(string title){
+void TaikoDatabase::delete_song(const string& title){
+    // cout << title << endl;
     if (!does_it_exist(title)){
         cout << "WHAT THE FUCK. TRIED TO DELETE INVALID TITLE" << endl;
         return;
@@ -322,6 +319,11 @@ void TaikoDatabase::delete_song(string title){
     tally[song_to_delete->stars-1][song_to_delete->level-'A']--; 
     database.erase(*song_to_delete);
     catalogue.erase(title);
+}
+
+void TaikoDatabase::replace_song(const string& old_song, const Song& new_song){
+    delete_song(old_song);
+    add_new_song(new_song);
 }
 
 void TaikoDatabase::help(){
@@ -336,11 +338,11 @@ void TaikoDatabase::help(){
     cout << "backup: backs up the current database (including unsaved changes)" << endl;
 }
 
-bool TaikoDatabase::does_it_exist(string title){
+bool TaikoDatabase::does_it_exist(const string& title){
     return (catalogue.find(title) != catalogue.end());
 }
 
-const Song TaikoDatabase::lookup(string title){
+const Song TaikoDatabase::lookup(const string& title){
     Song ans;
     if (does_it_exist(title)){
         ans = *catalogue[title];    

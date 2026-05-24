@@ -18,7 +18,7 @@ bool apply_search_mask(std::array<bool,N>& mask, std::string op, int num){
     }
 
     std::string sub_operator = op.substr(flip_count); 
-    for (int i=0; i<N; i++){
+    for (unsigned int i=0; i<N; i++){
         if (sub_operator == ">"){
             mask[i] = (mask[i] && flip^(i > num));
         } else if (sub_operator == ">="){

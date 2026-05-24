@@ -79,8 +79,9 @@ void search_interface(TaikoDatabase& don_chan, stringstream& search_term){
 
         } else {
             try {
-                int idx = stoi(command);
-                if (idx >= 0 && idx < results_index.size()){
+                unsigned int idx = stoi(command);
+                //negatives will wrap around
+                if (idx < results_index.size()){
                     song_menu(don_chan, results_index[idx]);
                 } else {
                     cout << "Invalid index" << endl << YOU;
@@ -169,17 +170,17 @@ void song_menu(TaikoDatabase &don_chan, string title){ //keep the old title in c
                 cout << "Enter new song title" << endl << YOU;
                 string new_title;
                 while(1){
-                    getline(cin,title);
-                    clean_up_whitespace(title);
-                    if (title.empty()){
+                    getline(cin,new_title);
+                    clean_up_whitespace(new_title);
+                    if (new_title.empty()){
                         cout << "You gave an empty title.. come on man" << endl << YOU;
                         continue;
                     }
-                    transform(title.begin(), title.end(), title.begin(), [](unsigned char c) {
+                    transform(new_title.begin(), new_title.end(), new_title.begin(), [](unsigned char c) {
                         return tolower(c);
                     });
                     
-                    if (don_chan.does_it_exist(title)){
+                    if (don_chan.does_it_exist(new_title)){
                         cout << "A song with the same title already exists!" << endl << YOU;
                         continue;
                     }

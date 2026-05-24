@@ -48,10 +48,11 @@ class TaikoDatabase{
 		string backup();
 		void help();
 
-		void add_new_song(Song song);
-		void delete_song(string title);
-		bool does_it_exist(string title);		
-		const Song lookup(string title); 
+		void add_new_song(const Song& song);
+		void delete_song(const string& title);
+		void replace_song(const string& old_song, const Song& new_song);
+		bool does_it_exist(const string& title);		
+		const Song lookup(const string& title); 
 
 	private:
 		string filename;
