@@ -1,22 +1,7 @@
-#include "taiko.h"
-#include "helpers.h"
+#include "ui.h"
 
-const string HLINE = "___________________________________";
-const string YOU = "zzykrkv: ";
-
-void search_interface(TaikoDatabase &don_chan, stringstream& termsearch_term);
-void song_menu(TaikoDatabase &don_chan, string title);
-
-int main(){
-    const string filename = "database.tsv"; 
-    
-    cout << "loading database..." << endl;
-    
-	TaikoDatabase don_chan(filename);
-
-    cout << "Welcome, zzykrkv" << endl;
-
-    while(1){        //CONSOLE LOOP
+void console_loop(TaikoDatabase& don_chan){
+	while(1){        
         cout << HLINE << endl << "           How can I help today?" << endl << YOU; 
         string command;
         getline(cin, command); 
@@ -30,8 +15,7 @@ int main(){
         } else if (function == "quit"){
             cout << "Saving and Quitting..." << endl;
 			don_chan.save();
-			cout << "See you next time, zzkyrkv" << endl;
-            return 0;
+            return;
         } else if (function == "search"){
             search_interface(don_chan,ss);
         } else if (function == "save") {
@@ -41,7 +25,7 @@ int main(){
             string backed_up_filename = don_chan.backup();
 			cout << "Database has been backed up to: " + backed_up_filename << endl;
         } else if (function == "add"){
-            // add_song(database,catalogue);
+            new_song_menu(don_chan);
         } else {
             cout << "Invalid command" << endl;
         }
@@ -74,7 +58,7 @@ void search_interface(TaikoDatabase& don_chan, stringstream& search_term){
 
         } else if (toupper(command[0]) == 'N'){
 
-            // add_song(database,catalogue);
+            new_song_menu(don_chan);
             break;
 
         } else {
@@ -122,15 +106,16 @@ void song_menu(TaikoDatabase &don_chan, string title){ //keep the old title in c
             while(1){
                 ask_char("Enter new level",new_lv,repeat_char);
                 new_lv = toupper(new_lv);
-                if ((new_lv>=min_allowed_level) && (new_lv<=max_allowed_level)){
+                if (don_chan.is_this_level_valid(new_lv)){
                     break;
                 }
-                cout << "Enter a valid level (" << min_allowed_level << "-" <<
-                max_allowed_level << ")" << endl << YOU;
+                cout << "Enter a valid level (" << don_chan.min_allowed_level << "-" <<
+                don_chan.max_allowed_level << ")" << endl << YOU;
             }
             Song new_song = {song.title, song.stars, new_lv};
-            don_chan.delete_song(title);
-            don_chan.add_new_song(new_song);
+            // don_chan.delete_song(title);
+            // don_chan.add_new_song(new_song);
+            don_chan.replace_song(title,new_song);
 
             if (old_level < new_lv) {
                 cout << "promoted " << title << " (" << song.stars << "☆)" << " from level " << old_level << " to level " << new_lv << endl;
@@ -159,8 +144,9 @@ void song_menu(TaikoDatabase &don_chan, string title){ //keep the old title in c
             }
             
             Song new_song = {song.title, new_stars, song.level};
-            don_chan.delete_song(title);
-            don_chan.add_new_song(new_song);
+            // don_chan.delete_song(title);
+            // don_chan.add_new_song(new_song);
+            don_chan.replace_song(title,new_song);
 
             cout << "updated " << title << " from " << old_stars << "☆ to " << new_stars << "☆" << endl;
             
@@ -193,8 +179,9 @@ void song_menu(TaikoDatabase &don_chan, string title){ //keep the old title in c
                 
                 if (yes){
                     Song new_song = {new_title, song.stars, song.level};
-                    don_chan.delete_song(title);
-                    don_chan.add_new_song(new_song);
+                    // don_chan.delete_song(title);
+                    // don_chan.add_new_song(new_song);
+                    don_chan.replace_song(title,new_song);
                     break;
 
                 } else {
@@ -225,5 +212,70 @@ void song_menu(TaikoDatabase &don_chan, string title){ //keep the old title in c
         } else {
             cout << "Invalid command" << endl << YOU;
         }
+    }
+}
+
+void new_song_menu(TaikoDatabase& don_chan){
+    string title;
+    int stars;
+    char level;
+
+    cout << HLINE << endl;
+    cout << "Enter song name" << endl << YOU;
+    while(1){
+        getline(cin,title);
+        clean_up_whitespace(title);
+        if (title.empty()){
+            cout << "You gave an empty title.. come on man" << endl << YOU;
+            continue;
+        }
+        transform(title.begin(), title.end(), title.begin(), [](unsigned char c) {
+            return tolower(c);
+        });
+        
+        if (don_chan.does_it_exist(title)){
+            cout << "A song with the same title already exists!" << endl << YOU;
+            continue;
+        }
+        break;
+    }
+    
+    bool repeat_int = false;
+    while (1){
+        bool outcome = ask_int("Enter star count", stars, repeat_int);
+        if (!outcome){
+            cout << "Invalid integer" << endl << YOU;
+            continue;
+        }
+        if ((1<=stars) && (stars<=10)){
+            break;
+        }
+        cout << "Enter a star count from 1 to 10" << endl << YOU;
+    }
+
+    bool repeat_char = false;
+    while (1){
+        ask_char("Enter a level",level,repeat_char);
+        level = toupper(level);
+        if (!don_chan.is_this_level_valid(level)){
+            break;
+        }
+        cout << "Enter a valid level (" << don_chan.min_allowed_level << "-" <<
+        don_chan.max_allowed_level << ")" << endl << YOU;
+    }
+
+
+    string level_s = {level};
+    string message = "Add: " + title + " (" + to_string(stars) 
+    + "*) " + "at level " + level_s + "? (Y/n)";
+    
+    bool decision;
+    ask_yn(message, decision);
+    if (decision){
+        Song new_song = {title,stars,level};
+        don_chan.add_new_song(new_song);
+        cout << "Added" << endl;
+    } else {
+        cout << "Cancelled" << endl;
     }
 }

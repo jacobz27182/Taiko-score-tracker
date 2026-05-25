@@ -6,14 +6,6 @@ TODO:
 - ADD A REPLACE FUNCTION
 */
 
-const string HLINE = "___________________________________";
-const string YOU = "zzykrkv: ";
-
-enum class SearchState{
-    Operator,
-    Number
-};
-
 TaikoDatabase::TaikoDatabase(string file_name) : filename(file_name){
 	/*
     Tally: tally[star][level]
@@ -283,7 +275,7 @@ string TaikoDatabase::backup(){
     int month =  1 + ltm->tm_mon;
     int day = ltm->tm_mday;
 
-    string backup_filename = string("filename") +  "_backup_" + to_string(year) + "_" 
+    string backup_filename = (string)"backups/" + filename +  "_backup_" + to_string(year) + "_" 
         + to_string(month) + "_" + to_string(day) + ".tsv";
     
     save(backup_filename);
@@ -295,7 +287,7 @@ void TaikoDatabase::add_new_song(const Song& song){
         cout << "WHAT THE FUCK, WHY DOES THIS SONG ALREADY EXIST" << endl;
         return;
     }
-    if ((song.level < min_allowed_level) || (song.level > max_allowed_level)){
+    if (!is_this_level_valid(song.level)){
         cout << "WHAT THE FUCK, WHY DOES THIS SONG HAVE AN INVALID LEVEL" << endl;
         return;
     }
@@ -348,4 +340,11 @@ const Song TaikoDatabase::lookup(const string& title){
         ans = *catalogue[title];    
     }
     return ans;
+}
+
+bool TaikoDatabase::is_this_level_valid(char lv){
+    if ((lv < min_allowed_level) || (lv  > max_allowed_level)){
+        return false;
+    }
+    return true;
 }

@@ -1,9 +1,8 @@
 #include "helpers.h"
+#include "constants.h"
+
 
 using namespace std;
-
-const string HLINE = "___________________________________";
-const string YOU = "zzykrkv: ";
 
 bool ask_int(string message, int& dest, bool& repeat){
     if (!repeat){

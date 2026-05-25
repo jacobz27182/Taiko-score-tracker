@@ -11,12 +11,10 @@
 #include <ctime>
 #include <algorithm>
 #include <strings.h>
+#include "constants.h"
 #include "helpers.h"
 
 using namespace std;
-
-static constexpr char min_allowed_level = 'A';
-static constexpr char max_allowed_level = 'F';
 
 struct Song{ 
     string title; 
@@ -51,8 +49,13 @@ class TaikoDatabase{
 		void add_new_song(const Song& song);
 		void delete_song(const string& title);
 		void replace_song(const string& old_song, const Song& new_song);
+
 		bool does_it_exist(const string& title);		
 		const Song lookup(const string& title); 
+		bool is_this_level_valid(char lv);
+
+		static constexpr char min_allowed_level = 'A';
+		static constexpr char max_allowed_level = 'F';
 
 	private:
 		string filename;
