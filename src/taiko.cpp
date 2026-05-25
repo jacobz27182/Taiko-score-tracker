@@ -1,4 +1,15 @@
 #define ARE_WE_HERE_YET cout << "here" << endl 
+#include <fstream> 
+#include <sstream> 
+#include <iostream> 
+#include <array>
+#include <cctype> 
+#include <ctime>
+#include <algorithm>
+#include <iomanip>
+#include <strings.h>
+#include "constants.h"
+#include "helpers.h"
 #include "taiko.h"
 
 /*
@@ -10,7 +21,6 @@ TaikoDatabase::TaikoDatabase(string file_name) : filename(file_name){
 	/*
     Tally: tally[star][level]
     */
-    fill(tally.data()->begin(), tally.data()->end(), 0);
 
     ifstream data_file;
     
@@ -63,6 +73,7 @@ TaikoDatabase::TaikoDatabase(string file_name) : filename(file_name){
         catalogue[title] = result.first;
         tally[stars-1][level-'A']++;
         i++;
+
     }
 
     data_file.close();
@@ -328,6 +339,61 @@ void TaikoDatabase::help(){
     cout << "\t Example usage with escape character: search \\stars!!" << endl;
     cout << "save: saves the current database" << endl;
     cout << "backup: backs up the current database (including unsaved changes)" << endl;
+    cout << "add: adds new song to database" << endl;
+    cout << "stats: displays your current progress" << endl;
+}
+
+void TaikoDatabase::display_stats(){
+    //tally[stars][level]
+    vector<int> agg(NUMBER_OF_LEVELS);
+    constexpr int chart_width = 100;
+
+    //PER STAR STATS
+    cout << HLINE << endl << HLINE << endl << "STAR BY STAR OVERVIEW" << endl;
+    vector<int> per_star(NUMBER_OF_LEVELS);
+    for (int stars = 1; stars <= 10; stars++){
+        int total = 0;
+        for (char lv = 'A'; lv<=max_allowed_level; lv++){
+            int count = tally[stars-1][lv-'A'];
+            per_star[lv-'A'] = count;
+            total += count;
+            agg[lv-'A'] += count;
+        }
+        total = total ? total : 1;
+        cout << stars << "☆:" << endl;
+
+        int bar_length; //print bars
+        for (char lv = 'A'; lv<=max_allowed_level; lv++){
+            cout << lv << "|";
+            float portion = (float)per_star[lv-'A']/total;
+            bar_length = (int)(portion*chart_width);
+            for (int i=0; i<bar_length; i++){
+                cout << "█";
+            }
+            cout << per_star[lv-'A'] << " (" << fixed << setprecision(1) << portion*100 << "%)";
+            cout << endl;
+        }
+        cout << HLINE << endl;
+
+    }
+
+    //AGGREGATE STATS
+    cout << HLINE << endl << "TOTAL OVERVIEW" << endl;
+
+    for (char lv = 'A'; lv<=max_allowed_level; lv++){
+        cout << lv << "|";
+        float portion = (float)agg[lv-'A']/database.size();
+        int bar_length = (int)(portion*chart_width);
+        for (int i=0; i<bar_length; i++){
+            cout << "█";
+        }
+        cout << agg[lv-'A'] << " (" << fixed << setprecision(1) << portion*100 << "%)";
+        cout << endl;
+    }
+    cout << HLINE << endl;
+
+    
+
 }
 
 bool TaikoDatabase::does_it_exist(const string& title){

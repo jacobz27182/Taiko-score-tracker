@@ -1,20 +1,18 @@
 #pragma once
 #include <vector> 
-#include <fstream> 
-#include <sstream> 
-#include <iostream> 
 #include <unordered_map> 
 #include <set> 
 #include <map>
-#include <array>
-#include <cctype> 
-#include <ctime>
-#include <algorithm>
-#include <strings.h>
-#include "constants.h"
-#include "helpers.h"
+#include <string>
+
+#define NUMBER_OF_LEVELS 6
 
 using namespace std;
+
+enum class SearchState{
+    Operator,
+    Number
+};
 
 struct Song{ 
     string title; 
@@ -45,6 +43,7 @@ class TaikoDatabase{
 		void save();
 		string backup();
 		void help();
+		void display_stats();
 
 		void add_new_song(const Song& song);
 		void delete_song(const string& title);
@@ -63,7 +62,7 @@ class TaikoDatabase{
 		set<Song,Song_Comp> database;
 		unordered_map<string, set<Song>::const_iterator> catalogue;
 		// tally[stars][levels] = count of songs
-		array<array<int, 6>, 10> tally;
+		array<array<int, NUMBER_OF_LEVELS>, 10> tally = {};
 
 		void save(const string& file_name);
 };

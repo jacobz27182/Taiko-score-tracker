@@ -1,5 +1,5 @@
-#include "constants.h"
-#include "taiko.h"
+#pragma once
+#include<sstream>
 
 void console_loop(TaikoDatabase& don_chan);
 void search_interface(TaikoDatabase &don_chan, stringstream& termsearch_term);

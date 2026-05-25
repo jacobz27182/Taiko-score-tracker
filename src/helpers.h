@@ -1,11 +1,6 @@
 #pragma once
-#include <vector>
 #include <string>
 #include <array>
-#include <algorithm>
-#include <iostream>
-#include "constants.h"
-
 
 template<size_t N>
 bool apply_search_mask(std::array<bool,N>& mask, std::string op, unsigned int num){

@@ -4,7 +4,3 @@
 
 const std::string HLINE = "___________________________________";
 const std::string YOU = "zzykrkv: ";
-enum class SearchState{
-    Operator,
-    Number
-};

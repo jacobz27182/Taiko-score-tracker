@@ -1,3 +1,8 @@
+#include <iostream>
+#include <algorithm>
+#include "constants.h"
+#include "taiko.h"
+#include "helpers.h"
 #include "ui.h"
 
 void console_loop(TaikoDatabase& don_chan){
@@ -26,6 +31,8 @@ void console_loop(TaikoDatabase& don_chan){
 			cout << "Database has been backed up to: " + backed_up_filename << endl;
         } else if (function == "add"){
             new_song_menu(don_chan);
+		} else if (function == "stats"){
+			don_chan.display_stats();
         } else {
             cout << "Invalid command" << endl;
         }
@@ -267,7 +274,7 @@ void new_song_menu(TaikoDatabase& don_chan){
 
     string level_s = {level};
     string message = "Add: " + title + " (" + to_string(stars) 
-    + "*) " + "at level " + level_s + "? (Y/n)";
+    + "☆) " + "at level " + level_s + "? (Y/n)";
     
     bool decision;
     ask_yn(message, decision);
