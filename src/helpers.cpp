@@ -19,6 +19,9 @@ bool ask_int(string message, int& dest, bool& repeat){
         return true;
     } catch (invalid_argument& e){
         return false;
+    } catch (out_of_range& e){
+        dest = -1;
+        return true;
     }
     
 }

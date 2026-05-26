@@ -17,22 +17,35 @@ void console_loop(TaikoDatabase& don_chan){
 
         if (function == "help"){
             don_chan.help();
+
         } else if (function == "quit"){
             cout << "Saving and Quitting..." << endl;
 			don_chan.save();
             return;
+
         } else if (function == "search"){
             search_interface(don_chan,ss);
+
         } else if (function == "save") {
             don_chan.save();
             cout << "Saved" << endl;
+
         }else if (function == "backup") {
             string backed_up_filename = don_chan.backup();
 			cout << "Database has been backed up to: " + backed_up_filename << endl;
+
         } else if (function == "add"){
             new_song_menu(don_chan);
+
 		} else if (function == "stats"){
 			don_chan.display_stats();
+
+		} else if (function == "undo"){
+			undo_redo(don_chan, UR::Undo, ss);
+
+		} else if (function == "redo"){
+			undo_redo(don_chan, UR::Redo, ss);
+
         } else {
             cout << "Invalid command" << endl;
         }
@@ -264,7 +277,7 @@ void new_song_menu(TaikoDatabase& don_chan){
     while (1){
         ask_char("Enter a level",level,repeat_char);
         level = toupper(level);
-        if (!don_chan.is_this_level_valid(level)){
+        if (don_chan.is_this_level_valid(level)){
             break;
         }
         cout << "Enter a valid level (" << don_chan.min_allowed_level << "-" <<
@@ -285,4 +298,44 @@ void new_song_menu(TaikoDatabase& don_chan){
     } else {
         cout << "Cancelled" << endl;
     }
+}
+
+void undo_redo(TaikoDatabase &don_chan, UR action, stringstream& term){
+	string potential_number;
+	term >> potential_number;
+
+	int amount = 1;
+	if (!potential_number.empty()){
+		try {
+			amount = stoi(potential_number);
+		} catch (invalid_argument& e) {
+			cout << "Not an integer" << endl;
+			return;
+		} catch (out_of_range& e){
+			cout << "I can only undo/redo between -2,147,483,648 and 2,147,483,647 times" << endl;
+			return;
+		}
+
+		if (amount == 0){
+			cout << "Ok bro????????" << endl;
+			return;
+		}
+
+		if (amount < 0){ //because lol why the fuck not. This is a feature and if you dont like it maybe learn to use a keyboard properly
+			amount *= -1;
+			if (action == UR::Undo){
+				action = UR::Redo;
+			} else {
+				action = UR::Undo;
+			}
+		}
+	}
+	
+	if (action == UR::Undo){
+		int total_changes = don_chan.undo(amount);
+		cout << "Undid " << total_changes << " changes" << endl;
+	} else {
+		int total_changes = don_chan.redo(amount);
+		cout << "Redid " << total_changes << " changes" << endl;
+	}
 }

@@ -20,6 +20,11 @@ struct Song{
     char level; 
 };
 
+struct Change{
+	Song before;
+	Song after;
+};
+
 struct Song_Comp {
     bool operator()(const Song& a, const Song& b) const {
         if (a.level != b.level){
@@ -45,6 +50,9 @@ class TaikoDatabase{
 		void help();
 		void display_stats();
 
+		int undo(int amount);
+		int redo(int amount);
+
 		void add_new_song(const Song& song);
 		void delete_song(const string& title);
 		void replace_song(const string& old_song, const Song& new_song);
@@ -63,6 +71,10 @@ class TaikoDatabase{
 		unordered_map<string, set<Song>::const_iterator> catalogue;
 		// tally[stars][levels] = count of songs
 		array<array<int, NUMBER_OF_LEVELS>, 10> tally = {};
+		vector<Change> changelog;
+
+		int time_in_changelog = -1;
+		bool track_changes = true;
 
 		void save(const string& file_name);
 };

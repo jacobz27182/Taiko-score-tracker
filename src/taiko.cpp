@@ -310,23 +310,55 @@ void TaikoDatabase::add_new_song(const Song& song){
     auto result = database.insert(song);
     catalogue[song.title] = result.first;
     tally[song.stars-1][song.level-'A']++;
+
+    if (track_changes){
+        if (++time_in_changelog != (long int)changelog.size()){
+            changelog.erase(changelog.begin() + time_in_changelog, changelog.end());    
+        }
+        changelog.resize(changelog.size()+1);
+        changelog.at(time_in_changelog) = Change{{},song};
+    }
 }
 
 void TaikoDatabase::delete_song(const string& title){
-    // cout << title << endl;
     if (!does_it_exist(title)){
         cout << "WHAT THE FUCK. TRIED TO DELETE INVALID TITLE" << endl;
         return;
     }
+
     set<Song>::const_iterator song_to_delete = catalogue[title];
     tally[song_to_delete->stars-1][song_to_delete->level-'A']--; 
+    if (track_changes){
+        if (++time_in_changelog != (long int)changelog.size()){
+            changelog.erase(changelog.begin() + time_in_changelog, changelog.end());    
+        }
+        changelog.resize(changelog.size()+1);
+
+        changelog.at(time_in_changelog) = Change{*song_to_delete,{}};
+    }
+
     database.erase(*song_to_delete);
     catalogue.erase(title);
 }
 
 void TaikoDatabase::replace_song(const string& old_song, const Song& new_song){
-    delete_song(old_song);
-    add_new_song(new_song);
+    if (track_changes){
+        if (++time_in_changelog != (long int)changelog.size()){
+            changelog.erase(changelog.begin() + time_in_changelog, changelog.end());    
+        }
+        changelog.resize(changelog.size()+1);
+        changelog.at(time_in_changelog) = Change{*catalogue[old_song],new_song};
+    }
+
+    if (track_changes){
+        track_changes = false;
+        delete_song(old_song);
+        add_new_song(new_song);
+        track_changes = true;
+    } else {
+        delete_song(old_song);
+        add_new_song(new_song);
+    }
 }
 
 void TaikoDatabase::help(){
@@ -382,7 +414,7 @@ void TaikoDatabase::display_stats(){
 
     for (char lv = 'A'; lv<=max_allowed_level; lv++){
         cout << lv << "|";
-        float portion = (float)agg[lv-'A']/database.size();
+        float portion = database.empty() ? 0.0f : (float)agg[lv-'A'] / database.size();
         int bar_length = (int)(portion*chart_width);
         for (int i=0; i<bar_length; i++){
             cout << "█";
@@ -413,4 +445,64 @@ bool TaikoDatabase::is_this_level_valid(char lv){
         return false;
     }
     return true;
+}
+
+int TaikoDatabase::undo(int amount){
+    int i;
+    track_changes = false;
+
+    for (i=0; i<amount; i++){
+        // cout << "changelog length: " << changelog.size() << endl;
+        // cout << "time in changelog: " << time_in_changelog << endl;
+
+        if (time_in_changelog==-1){
+            break;
+        }
+
+        // ARE_WE_HERE_YET;
+        Change change = changelog.at(time_in_changelog--);
+        // ARE_WE_HERE_YET;
+
+        if (change.before.title.empty()){ //this is an addition, invert it with a deletion
+            cout << track_changes << endl;
+            delete_song(change.after.title);
+        } else if (change.after.title.empty()){ //this is a deletion, invert it with a addition
+            add_new_song(change.before);
+        } else { //this is a replacement, simply swap.
+            replace_song(change.after.title,change.before);
+        }
+    }
+
+    // cout << "changelog length: " << changelog.size() << endl;
+    // cout << "time in changelog: " << time_in_changelog << endl;
+
+    track_changes = true;
+    return i;
+}
+
+int TaikoDatabase::redo(int amount){
+    int i;
+    track_changes = false;
+    cout << track_changes << endl;
+
+    for (i=0; i<amount; i++){
+        if (time_in_changelog+1==(long int)changelog.size()){ //nothing left to redo
+            break;
+        }
+        Change change = changelog.at(++time_in_changelog);
+
+        if (change.before.title.empty()){ //this is an addition
+            add_new_song(change.after);
+        } else if (change.after.title.empty()){ //this is a deletion
+            delete_song(change.before.title);
+        } else { //this is a replacement
+            replace_song(change.before.title,change.after);
+        }
+    }
+    
+    cout << "changelog length: " << changelog.size() << endl;
+    cout << "time in changelog: " << time_in_changelog << endl;
+
+    track_changes = true;
+    return i;
 }
