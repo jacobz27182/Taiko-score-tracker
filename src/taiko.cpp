@@ -366,13 +366,18 @@ void TaikoDatabase::help(){
     cout << "Help Menu" << endl;
     cout << "quit: saves and quits" << endl;
     cout << "search [SPECIFIERS] [TERM]: searches for songs with a given term " << endl;
-    cout << "\t Specifiers: Filter form stars or level. Allowed comparison operators are >,<,==,<=,>=,!" << endl;
+    cout << "\t If no arguments are given, the entire song list will be printed" << endl;
+    cout << "\t Specifiers: Filter from stars or level. Allowed comparison operators are >,<,==,<=,>=,!" << endl;
     cout << "\t Example usage: search stars>4 level!<=C rose" << endl;
     cout << "\t Example usage with escape character: search \\stars!!" << endl;
     cout << "save: saves the current database" << endl;
     cout << "backup: backs up the current database (including unsaved changes)" << endl;
     cout << "add: adds new song to database" << endl;
     cout << "stats: displays your current progress" << endl;
+    cout << "undo [QUANTITY]: undoes a set amount of changes" << endl;
+    cout << "\t If no quanity is given, one change will be undone" << endl;
+    cout << "redo [QUANTITY]: redoes a set amount of changes" << endl;
+    cout << "\t If no quanity is given, one change will be undone" << endl;
 }
 
 void TaikoDatabase::display_stats(){
@@ -452,8 +457,6 @@ int TaikoDatabase::undo(int amount){
     track_changes = false;
 
     for (i=0; i<amount; i++){
-        // cout << "changelog length: " << changelog.size() << endl;
-        // cout << "time in changelog: " << time_in_changelog << endl;
 
         if (time_in_changelog==-1){
             break;
@@ -472,9 +475,6 @@ int TaikoDatabase::undo(int amount){
             replace_song(change.after.title,change.before);
         }
     }
-
-    // cout << "changelog length: " << changelog.size() << endl;
-    // cout << "time in changelog: " << time_in_changelog << endl;
 
     track_changes = true;
     return i;
@@ -499,9 +499,6 @@ int TaikoDatabase::redo(int amount){
             replace_song(change.before.title,change.after);
         }
     }
-    
-    cout << "changelog length: " << changelog.size() << endl;
-    cout << "time in changelog: " << time_in_changelog << endl;
 
     track_changes = true;
     return i;
